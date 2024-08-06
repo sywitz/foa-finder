@@ -48,7 +48,7 @@ def get_xml_url_and_filename():
 
     file_found = None
     while file_found is None:
-        url = 'https://www.grants.gov/extract/GrantsDBExtract{}v2.zip'.format(
+        url = 'https://prod-grants-gov-chatbot.s3.amazonaws.com/extracts/GrantsDBExtract{}v2.zip'.format(
             day_to_try.strftime('%Y%m%d'))
         response = requests.get(url, stream=True)
 
@@ -248,12 +248,12 @@ def create_slack_text(filename, df, print_text=True):
         len(df), db_date)
     slack_text += '\n======================================='
 
-    base_hyperlink = r'https://www.grants.gov/web/grants/search-grants.html?keywords='
+    base_hyperlink = r'https://www.grants.gov/search-results-detail/'
 
     # loop over each FOA title and add to text
     for i in range(len(df)):
 
-        hyperlink = base_hyperlink + df['opportunitynumber'].iloc[i]
+        hyperlink = base_hyperlink + df['opportunityid'].iloc[i]
 
         slack_text += '\n{}) Updated: {},  Closes: {}, Title: {}, {} ({}) \n{}'.format(
             i+1,
