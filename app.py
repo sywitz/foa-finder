@@ -279,21 +279,58 @@ def create_slack_text(filename, df, print_text=True):
 slack_text = create_slack_text(filename, df)
 
 
-# %%
+# %%%%%%%%%%%%%%%%%% modified to send an email (not slack) %%%%%%%%%%%%%%%%%%%%%
 
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
-def send_to_slack(slack_text):
-    """Send results to a channel on Slack"""
-    print('Sending results to slack')
+def send_email(email_text):
+    """Send results to an email address."""
+    print('Sending results via email')
     try:
-        response = requests.post(
-            os.environ['SLACK_WEBHOOK_URL'],
-            data=json.dumps({'text': slack_text}),
-            headers={'Content-Type': 'application/json'})
-        print('Slack response: ' + str(response.text))
-    except:
-        print('Connection to Slack could not be established.')
+        # Email credentials and setup
+        sender_address = 'your-email@gmail.com'
+        sender_pass = 'your-email-password'
+        receiver_address = 'receiver-email@gmail.com'
+        
+        # Setup the MIME
+        message = MIMEMultipart()
+        message['From'] = sender_address
+        message['To'] = receiver_address
+        message['Subject'] = 'Updated FOAs from grants.gov'
+        
+        # The body and the attachments for the mail
+        message.attach(MIMEText(email_text, 'plain'))
+        
+        # Create SMTP session for sending the mail
+        session = smtplib.SMTP('smtp.gmail.com', 587)  # use gmail with port
+        session.starttls()  # enable security
+        session.login(sender_address, sender_pass)  # login with mail_id and password
+        text = message.as_string()
+        session.sendmail(sender_address, receiver_address, text)
+        session.quit()
+        print('Mail Sent')
+    except Exception as e:
+        print('Failed to send email:', str(e))
+
+# Use this function instead of send_to_slack
+email_text = create_slack_text(filename, df, print_text=False)
+send_email(email_text)
 
 
-# send text to slack
-# send_to_slack(slack_text)
+# def send_to_slack(slack_text):
+#     """Send results to a channel on Slack"""
+#     print('Sending results to slack')
+#     try:
+#         response = requests.post(
+#             os.environ['SLACK_WEBHOOK_URL'],
+#             data=json.dumps({'text': slack_text}),
+#             headers={'Content-Type': 'application/json'})
+#         print('Slack response: ' + str(response.text))
+#     except:
+#         print('Connection to Slack could not be established.')
+
+
+# # send text to slack
+# # send_to_slack(slack_text)
